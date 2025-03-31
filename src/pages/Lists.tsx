@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -260,7 +259,9 @@ const Lists = () => {
       status: list.filters.status || null,
       assignedTo: list.filters.assignedTo || null,
       minAmount: list.filters.minAmount || null,
-      stage: list.filters.stage || null
+      stage: list.filters.stage || null,
+      sector: list.filters.sector || null,
+      weekDeals: list.filters.weekDeals || null
     });
     
     setSearchTerm(list.filters.searchTerm || '');
