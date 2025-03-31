@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Deal } from '@/lib/types';
 import { Filter, Download, PlusCircle, Settings } from 'lucide-react';
+import ColumnSettingsDrawer, { ColumnDefinition } from '@/components/ColumnSettingsDrawer';
 
 // Define FilterState interface
 export interface FilterState {
@@ -25,6 +26,17 @@ export interface FilterState {
   weekDeals: string | null;
 }
 
+const defaultColumns: ColumnDefinition[] = [
+  { id: '1', name: 'Deal Name', key: 'name', type: 'text', required: true, visible: true, order: 0 },
+  { id: '2', name: 'Company', key: 'company', type: 'text', required: true, visible: true, order: 1 },
+  { id: '3', name: 'Status', key: 'status', type: 'singleSelect', options: ['Pass', 'Engage', 'OnHold', 'BusinessDD', 'TermSheet', 'Portfolio'], required: true, visible: true, order: 2 },
+  { id: '4', name: 'Amount', key: 'amount', type: 'currency', required: true, visible: true, order: 3 },
+  { id: '5', name: 'Assigned To', key: 'assignedTo', type: 'text', required: true, visible: true, order: 4 },
+  { id: '6', name: 'Date Received', key: 'dateReceived', type: 'date', required: true, visible: true, order: 5 },
+  { id: '7', name: 'Week Deals', key: 'weekDeals', type: 'singleSelect', options: ['Yes', 'No'], required: false, visible: true, order: 6 },
+  { id: '8', name: 'Sector', key: 'sector', type: 'singleSelect', options: ['Technology', 'Healthcare', 'Finance', 'Consumer', 'Energy', 'Real Estate', 'Manufacturing', 'Other'], required: false, visible: true, order: 7 },
+];
+
 const Lists = () => {
   const [filters, setFilters] = useState<FilterState>({
     status: null,
@@ -33,6 +45,10 @@ const Lists = () => {
     stage: null,
     sector: null,
     weekDeals: null
+  });
+  const [columns, setColumns] = useState<ColumnDefinition[]>(() => {
+    const savedColumns = localStorage.getItem('dealListColumns');
+    return savedColumns ? JSON.parse(savedColumns) : defaultColumns;
   });
 
   // Fetch deals data
@@ -48,6 +64,11 @@ const Lists = () => {
       return await response.json() as Deal[];
     }
   });
+
+  const handleColumnsChange = (newColumns: ColumnDefinition[]) => {
+    setColumns(newColumns);
+    localStorage.setItem('dealListColumns', JSON.stringify(newColumns));
+  };
 
   const handleFilterChange = (name: keyof FilterState, value: string | number | null) => {
     // If value is "all", set it to null to clear the filter
@@ -91,10 +112,15 @@ const Lists = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Deal Lists</h1>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Settings className="h-4 w-4 text-gray-500" />
-              <span>Settings</span>
-            </Button>
+            <ColumnSettingsDrawer 
+              columns={columns}
+              onColumnsChange={handleColumnsChange}
+            >
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Settings className="h-4 w-4 text-gray-500" />
+                <span>Settings</span>
+              </Button>
+            </ColumnSettingsDrawer>
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Filter className="h-4 w-4 text-gray-500" />
               <span>Filter</span>
