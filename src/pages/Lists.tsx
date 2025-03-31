@@ -43,12 +43,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { DealListSaveDialog } from '@/components/deal-table';
+import { useToast } from '@/hooks/use-toast';
 
 interface FilterState {
   status: string | null;
   assignedTo: string | null;
   minAmount: number | null;
   stage: string | null;
+}
+
+interface SavedList {
+  id: string;
+  name: string;
+  filters: FilterState & { searchTerm?: string };
+  isActive?: boolean;
 }
 
 const Lists = () => {
@@ -61,6 +70,36 @@ const Lists = () => {
     stage: null
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [savedLists, setSavedLists] = useState<SavedList[]>([
+    {
+      id: '1',
+      name: 'All Active Deals',
+      filters: {},
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'High Value Deals',
+      filters: { minAmount: 500000 }
+    },
+    {
+      id: '3',
+      name: 'My Assigned Deals',
+      filters: { assignedTo: 'John Doe' }
+    },
+    {
+      id: '4',
+      name: 'Term Sheets',
+      filters: { stage: 'Term Sheet Issued' }
+    },
+    {
+      id: '5',
+      name: 'Portfolio Companies',
+      filters: { status: 'Portfolio' }
+    }
+  ]);
+  const { toast } = useToast();
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -141,6 +180,56 @@ const Lists = () => {
     return Object.values(filters).filter(v => v !== null).length + (searchTerm ? 1 : 0);
   };
 
+  const handleSaveList = (name: string, currentFilters: FilterState & { searchTerm?: string }) => {
+    const newList: SavedList = {
+      id: Date.now().toString(),
+      name,
+      filters: { 
+        ...currentFilters,
+        searchTerm
+      }
+    };
+    
+    setSavedLists(prev => [newList, ...prev.filter(list => list.id !== '1')]);
+    
+    toast({
+      title: "List saved successfully",
+      description: `Your list "${name}" has been added to your saved lists.`
+    });
+  };
+
+  const selectList = (list: SavedList) => {
+    setSavedLists(prev => 
+      prev.map(item => ({
+        ...item,
+        isActive: item.id === list.id
+      }))
+    );
+    
+    setFilters({
+      status: list.filters.status || null,
+      assignedTo: list.filters.assignedTo || null,
+      minAmount: list.filters.minAmount || null,
+      stage: list.filters.stage || null
+    });
+    
+    setSearchTerm(list.filters.searchTerm || '');
+  };
+
+  const deleteList = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    const listToDelete = savedLists.find(list => list.id === id);
+    
+    if (listToDelete) {
+      setSavedLists(prev => prev.filter(list => list.id !== id));
+      
+      toast({
+        title: "List deleted",
+        description: `"${listToDelete.name}" has been removed from your saved lists.`
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-crm-lightGray">
       <Navbar />
@@ -153,12 +242,19 @@ const Lists = () => {
           </div>
           
           <div className="mt-4 md:mt-0 flex items-center gap-2">
-            <Button variant="outline" className="shadow-sm">
+            <Button 
+              variant="outline" 
+              className="shadow-sm"
+              onClick={() => setSaveDialogOpen(true)}
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               <span>Save Current List</span>
             </Button>
             
-            <Button className="shadow-sm">
+            <Button 
+              className="shadow-sm"
+              onClick={() => setSaveDialogOpen(true)}
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               <span>Create New List</span>
             </Button>
@@ -174,45 +270,46 @@ const Lists = () => {
               </CardHeader>
               <CardContent className="pb-0">
                 <div className="space-y-1">
-                  <div className="p-2 rounded-md bg-crm-blue/10 text-crm-blue font-medium text-sm flex items-center">
-                    <span className="grow">All Active Deals</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="p-2 rounded-md hover:bg-gray-100 text-sm flex items-center cursor-pointer transition-colors">
-                    <span className="grow">High Value Deals</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="p-2 rounded-md hover:bg-gray-100 text-sm flex items-center cursor-pointer transition-colors">
-                    <span className="grow">My Assigned Deals</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="p-2 rounded-md hover:bg-gray-100 text-sm flex items-center cursor-pointer transition-colors">
-                    <span className="grow">Term Sheets</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <div className="p-2 rounded-md hover:bg-gray-100 text-sm flex items-center cursor-pointer transition-colors">
-                    <span className="grow">Portfolio Companies</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {savedLists.map(list => (
+                    <div 
+                      key={list.id}
+                      className={`p-2 rounded-md text-sm flex items-center cursor-pointer transition-colors ${
+                        list.isActive 
+                          ? 'bg-crm-blue/10 text-crm-blue font-medium' 
+                          : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => selectList(list)}
+                    >
+                      <span className="grow">{list.name}</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => selectList(list)}>
+                            Apply Filters
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="text-red-600"
+                            onClick={(e) => deleteList(list.id, e)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
               
               <CardFooter className="pt-4 pb-4">
-                <Button variant="outline" className="w-full text-sm">
+                <Button 
+                  variant="outline" 
+                  className="w-full text-sm"
+                  onClick={() => setSaveDialogOpen(true)}
+                >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   <span>Create New List</span>
                 </Button>
@@ -225,7 +322,9 @@ const Lists = () => {
               <CardHeader className="pb-3 border-b">
                 <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                   <div>
-                    <CardTitle className="text-lg font-medium">All Active Deals</CardTitle>
+                    <CardTitle className="text-lg font-medium">
+                      {savedLists.find(list => list.isActive)?.name || "All Deals"}
+                    </CardTitle>
                     <CardDescription className="mt-1">
                       Showing {filteredDeals.length} deals
                     </CardDescription>
@@ -265,7 +364,7 @@ const Lists = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>Export to Excel</DropdownMenuItem>
-                        <DropdownMenuItem>Save Current View</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSaveDialogOpen(true)}>Save Current View</DropdownMenuItem>
                         <DropdownMenuItem onClick={clearFilters}>Clear All Filters</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -273,106 +372,104 @@ const Lists = () => {
                 </div>
               </CardHeader>
               
-              {showFilters && (
-                <div className="p-4 bg-gray-50 border-b animate-slide-in">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-medium">Filters</h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-gray-500 hover:text-gray-700"
-                      onClick={clearFilters}
+              <div className="p-4 bg-gray-50 border-b animate-slide-in">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-medium">Filters</h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-gray-500 hover:text-gray-700"
+                    onClick={clearFilters}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" />
+                    Clear All
+                  </Button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div>
+                    <Label className="text-xs">Status</Label>
+                    <Select
+                      value={filters.status || ''}
+                      onValueChange={(value) => handleFilterChange('status', value || null)}
                     >
-                      <X className="h-3.5 w-3.5 mr-1" />
-                      Clear All
-                    </Button>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All Statuses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="Pass">Pass</SelectItem>
+                        <SelectItem value="Engage">Engage</SelectItem>
+                        <SelectItem value="OnHold">On Hold</SelectItem>
+                        <SelectItem value="BusinessDD">Business DD</SelectItem>
+                        <SelectItem value="TermSheet">Term Sheet</SelectItem>
+                        <SelectItem value="Portfolio">Portfolio</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                    <div>
-                      <Label className="text-xs">Status</Label>
-                      <Select
-                        value={filters.status || ''}
-                        onValueChange={(value) => handleFilterChange('status', value || null)}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Statuses</SelectItem>
-                          <SelectItem value="Pass">Pass</SelectItem>
-                          <SelectItem value="Engage">Engage</SelectItem>
-                          <SelectItem value="OnHold">On Hold</SelectItem>
-                          <SelectItem value="BusinessDD">Business DD</SelectItem>
-                          <SelectItem value="TermSheet">Term Sheet</SelectItem>
-                          <SelectItem value="Portfolio">Portfolio</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Assigned To</Label>
-                      <Select
-                        value={filters.assignedTo || ''}
-                        onValueChange={(value) => handleFilterChange('assignedTo', value || null)}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="All Users" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Users</SelectItem>
-                          {MOCK_USERS.map(user => (
-                            <SelectItem key={user.id} value={user.name}>
-                              {user.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Min Amount</Label>
-                      <Select
-                        value={filters.minAmount?.toString() || ''}
-                        onValueChange={(value) => handleFilterChange('minAmount', value ? parseInt(value) : null)}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Any Amount" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="any">Any Amount</SelectItem>
-                          <SelectItem value="100000">$100,000+</SelectItem>
-                          <SelectItem value="500000">$500,000+</SelectItem>
-                          <SelectItem value="1000000">$1,000,000+</SelectItem>
-                          <SelectItem value="5000000">$5,000,000+</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label className="text-xs">Stage</Label>
-                      <Select
-                        value={filters.stage || ''}
-                        onValueChange={(value) => handleFilterChange('stage', value || null)}
-                      >
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="All Stages" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Stages</SelectItem>
-                          <SelectItem value="Initial Screening">Initial Screening</SelectItem>
-                          <SelectItem value="Initial Meeting">Initial Meeting</SelectItem>
-                          <SelectItem value="Follow-up Meeting">Follow-up Meeting</SelectItem>
-                          <SelectItem value="Due Diligence">Due Diligence</SelectItem>
-                          <SelectItem value="Negotiation">Negotiation</SelectItem>
-                          <SelectItem value="Term Sheet Issued">Term Sheet Issued</SelectItem>
-                          <SelectItem value="Closed">Closed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div>
+                    <Label className="text-xs">Assigned To</Label>
+                    <Select
+                      value={filters.assignedTo || ''}
+                      onValueChange={(value) => handleFilterChange('assignedTo', value || null)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All Users" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        {MOCK_USERS.map(user => (
+                          <SelectItem key={user.id} value={user.name}>
+                            {user.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs">Min Amount</Label>
+                    <Select
+                      value={filters.minAmount?.toString() || ''}
+                      onValueChange={(value) => handleFilterChange('minAmount', value ? parseInt(value) : null)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Any Amount" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">Any Amount</SelectItem>
+                        <SelectItem value="100000">$100,000+</SelectItem>
+                        <SelectItem value="500000">$500,000+</SelectItem>
+                        <SelectItem value="1000000">$1,000,000+</SelectItem>
+                        <SelectItem value="5000000">$5,000,000+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs">Stage</Label>
+                    <Select
+                      value={filters.stage || ''}
+                      onValueChange={(value) => handleFilterChange('stage', value || null)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All Stages" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Stages</SelectItem>
+                        <SelectItem value="Initial Screening">Initial Screening</SelectItem>
+                        <SelectItem value="Initial Meeting">Initial Meeting</SelectItem>
+                        <SelectItem value="Follow-up Meeting">Follow-up Meeting</SelectItem>
+                        <SelectItem value="Due Diligence">Due Diligence</SelectItem>
+                        <SelectItem value="Negotiation">Negotiation</SelectItem>
+                        <SelectItem value="Term Sheet Issued">Term Sheet Issued</SelectItem>
+                        <SelectItem value="Closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-              )}
+              </div>
               
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -459,6 +556,13 @@ const Lists = () => {
             </Card>
           </div>
         </div>
+        
+        <DealListSaveDialog
+          open={saveDialogOpen}
+          onOpenChange={setSaveDialogOpen}
+          currentFilters={{ ...filters, searchTerm }}
+          onSaveList={handleSaveList}
+        />
       </main>
     </div>
   );

@@ -5,11 +5,13 @@ import DealTableActions from './DealTableActions';
 import DealStatusBadge from './DealStatusBadge';
 import DealTableCell from './DealTableCell';
 import DealTableFooter from './DealTableFooter';
+import DealListSaveDialog from './DealListSaveDialog';
 
 export {
   DealTableHeader,
   DealTableActions,
   DealStatusBadge,
   DealTableCell,
-  DealTableFooter
+  DealTableFooter,
+  DealListSaveDialog
 };
