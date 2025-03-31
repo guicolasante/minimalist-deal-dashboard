@@ -12,12 +12,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface FilterState {
   status: string | null;
   assignedTo: string | null;
   minAmount: number | null;
   stage: string | null;
+  sector: string | null;
+  weekDeals: string | null;
   searchTerm?: string;
 }
 
@@ -40,7 +43,9 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
     status: !!currentFilters.status,
     assignedTo: !!currentFilters.assignedTo,
     minAmount: !!currentFilters.minAmount,
-    stage: !!currentFilters.stage
+    stage: !!currentFilters.stage,
+    sector: !!currentFilters.sector,
+    weekDeals: !!currentFilters.weekDeals
   });
   const { toast } = useToast();
 
@@ -52,8 +57,11 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
         status: !!currentFilters.status,
         assignedTo: !!currentFilters.assignedTo,
         minAmount: !!currentFilters.minAmount,
-        stage: !!currentFilters.stage
+        stage: !!currentFilters.stage,
+        sector: !!currentFilters.sector,
+        weekDeals: !!currentFilters.weekDeals
       });
+      setListName('');
     }
   }, [open, currentFilters]);
 
@@ -85,13 +93,6 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
 
     onSaveList(listName, filteredFilters);
     setListName('');
-    setSelectedFilters({
-      searchTerm: false,
-      status: false,
-      assignedTo: false,
-      minAmount: false,
-      stage: false
-    });
     onOpenChange(false);
     
     toast({
@@ -113,9 +114,9 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
         <div className="py-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="listName" className="text-sm font-medium">
+              <Label htmlFor="listName">
                 List Name
-              </label>
+              </Label>
               <Input
                 id="listName"
                 value={listName}
@@ -127,18 +128,17 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
             <div className="space-y-2">
               <p className="text-sm font-medium">Select Filters to Include</p>
               <div className="rounded-md bg-gray-50 p-3 space-y-3">
-                {/* Render filter options even when no active filters */}
+                {/* Render filter options regardless of filter status */}
                 <div className="flex items-center space-x-2">
                   <Checkbox 
                     id="filter-search"
                     checked={selectedFilters.searchTerm}
                     onCheckedChange={() => handleFilterToggle('searchTerm')}
-                    disabled={!currentFilters.searchTerm}
                   />
-                  <label htmlFor="filter-search" className={`text-sm cursor-pointer flex-1 ${!currentFilters.searchTerm ? 'text-muted-foreground opacity-70' : ''}`}>
+                  <Label htmlFor="filter-search" className="cursor-pointer flex-1">
                     <span className="text-muted-foreground">Search:</span>{' '}
                     <span className="font-medium text-foreground">{currentFilters.searchTerm || 'Not set'}</span>
-                  </label>
+                  </Label>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -146,12 +146,11 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
                     id="filter-status"
                     checked={selectedFilters.status}
                     onCheckedChange={() => handleFilterToggle('status')}
-                    disabled={!currentFilters.status}
                   />
-                  <label htmlFor="filter-status" className={`text-sm cursor-pointer flex-1 ${!currentFilters.status ? 'text-muted-foreground opacity-70' : ''}`}>
+                  <Label htmlFor="filter-status" className="cursor-pointer flex-1">
                     <span className="text-muted-foreground">Status:</span>{' '}
                     <span className="font-medium text-foreground">{currentFilters.status || 'Not set'}</span>
-                  </label>
+                  </Label>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -159,12 +158,11 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
                     id="filter-assigned"
                     checked={selectedFilters.assignedTo}
                     onCheckedChange={() => handleFilterToggle('assignedTo')}
-                    disabled={!currentFilters.assignedTo}
                   />
-                  <label htmlFor="filter-assigned" className={`text-sm cursor-pointer flex-1 ${!currentFilters.assignedTo ? 'text-muted-foreground opacity-70' : ''}`}>
+                  <Label htmlFor="filter-assigned" className="cursor-pointer flex-1">
                     <span className="text-muted-foreground">Assigned To:</span>{' '}
                     <span className="font-medium text-foreground">{currentFilters.assignedTo || 'Not set'}</span>
-                  </label>
+                  </Label>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -172,14 +170,13 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
                     id="filter-amount"
                     checked={selectedFilters.minAmount}
                     onCheckedChange={() => handleFilterToggle('minAmount')}
-                    disabled={!currentFilters.minAmount}
                   />
-                  <label htmlFor="filter-amount" className={`text-sm cursor-pointer flex-1 ${!currentFilters.minAmount ? 'text-muted-foreground opacity-70' : ''}`}>
+                  <Label htmlFor="filter-amount" className="cursor-pointer flex-1">
                     <span className="text-muted-foreground">Min Amount:</span>{' '}
                     <span className="font-medium text-foreground">
                       {currentFilters.minAmount ? `$${currentFilters.minAmount.toLocaleString()}` : 'Not set'}
                     </span>
-                  </label>
+                  </Label>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -187,18 +184,36 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
                     id="filter-stage"
                     checked={selectedFilters.stage}
                     onCheckedChange={() => handleFilterToggle('stage')}
-                    disabled={!currentFilters.stage}
                   />
-                  <label htmlFor="filter-stage" className={`text-sm cursor-pointer flex-1 ${!currentFilters.stage ? 'text-muted-foreground opacity-70' : ''}`}>
+                  <Label htmlFor="filter-stage" className="cursor-pointer flex-1">
                     <span className="text-muted-foreground">Stage:</span>{' '}
                     <span className="font-medium text-foreground">{currentFilters.stage || 'Not set'}</span>
-                  </label>
+                  </Label>
                 </div>
                 
-                {!currentFilters.searchTerm && !currentFilters.status && !currentFilters.assignedTo && 
-                 !currentFilters.minAmount && !currentFilters.stage && (
-                  <p className="text-muted-foreground italic">No filters currently applied. Set filters in the main view first.</p>
-                )}
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="filter-sector"
+                    checked={selectedFilters.sector}
+                    onCheckedChange={() => handleFilterToggle('sector')}
+                  />
+                  <Label htmlFor="filter-sector" className="cursor-pointer flex-1">
+                    <span className="text-muted-foreground">Sector:</span>{' '}
+                    <span className="font-medium text-foreground">{currentFilters.sector || 'Not set'}</span>
+                  </Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="filter-weekDeals"
+                    checked={selectedFilters.weekDeals}
+                    onCheckedChange={() => handleFilterToggle('weekDeals')}
+                  />
+                  <Label htmlFor="filter-weekDeals" className="cursor-pointer flex-1">
+                    <span className="text-muted-foreground">Week Deals:</span>{' '}
+                    <span className="font-medium text-foreground">{currentFilters.weekDeals || 'Not set'}</span>
+                  </Label>
+                </div>
               </div>
             </div>
           </div>

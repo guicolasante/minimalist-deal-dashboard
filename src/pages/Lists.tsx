@@ -52,6 +52,8 @@ interface FilterState {
   assignedTo: string | null;
   minAmount: number | null;
   stage: string | null;
+  sector: string | null;
+  weekDeals: string | null;
 }
 
 interface SavedList {
@@ -68,7 +70,9 @@ const Lists = () => {
     status: null,
     assignedTo: null,
     minAmount: null,
-    stage: null
+    stage: null,
+    sector: null,
+    weekDeals: null
   });
   const [showFilters, setShowFilters] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -80,7 +84,9 @@ const Lists = () => {
         status: null,
         assignedTo: null,
         minAmount: null,
-        stage: null
+        stage: null,
+        sector: null,
+        weekDeals: null
       },
       isActive: true
     },
@@ -91,7 +97,9 @@ const Lists = () => {
         status: null,
         assignedTo: null,
         minAmount: 500000,
-        stage: null
+        stage: null,
+        sector: null,
+        weekDeals: null
       }
     },
     {
@@ -101,7 +109,9 @@ const Lists = () => {
         status: null,
         assignedTo: 'John Doe',
         minAmount: null,
-        stage: null
+        stage: null,
+        sector: null,
+        weekDeals: null
       }
     },
     {
@@ -111,7 +121,9 @@ const Lists = () => {
         status: null,
         assignedTo: null,
         minAmount: null,
-        stage: 'Term Sheet Issued'
+        stage: 'Term Sheet Issued',
+        sector: null,
+        weekDeals: null
       }
     },
     {
@@ -121,7 +133,9 @@ const Lists = () => {
         status: 'Portfolio',
         assignedTo: null,
         minAmount: null,
-        stage: null
+        stage: null,
+        sector: null,
+        weekDeals: null
       }
     }
   ]);
@@ -179,6 +193,14 @@ const Lists = () => {
     if (filters.stage && deal.stage !== filters.stage) {
       return false;
     }
+    
+    if (filters.sector && deal.sector !== filters.sector) {
+      return false;
+    }
+    
+    if (filters.weekDeals && deal.weekDeals !== filters.weekDeals) {
+      return false;
+    }
 
     return true;
   };
@@ -197,7 +219,9 @@ const Lists = () => {
       status: null,
       assignedTo: null,
       minAmount: null,
-      stage: null
+      stage: null,
+      sector: null,
+      weekDeals: null
     });
     setSearchTerm('');
   };
@@ -412,7 +436,7 @@ const Lists = () => {
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
                   <div>
                     <Label className="text-xs">Status</Label>
                     <Select
@@ -423,7 +447,7 @@ const Lists = () => {
                         <SelectValue placeholder="All Statuses" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="">All Statuses</SelectItem>
                         <SelectItem value="Pass">Pass</SelectItem>
                         <SelectItem value="Engage">Engage</SelectItem>
                         <SelectItem value="OnHold">On Hold</SelectItem>
@@ -444,7 +468,7 @@ const Lists = () => {
                         <SelectValue placeholder="All Users" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Users</SelectItem>
+                        <SelectItem value="">All Users</SelectItem>
                         {MOCK_USERS.map(user => (
                           <SelectItem key={user.id} value={user.name}>
                             {user.name}
@@ -464,7 +488,7 @@ const Lists = () => {
                         <SelectValue placeholder="Any Amount" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any Amount</SelectItem>
+                        <SelectItem value="">Any Amount</SelectItem>
                         <SelectItem value="100000">$100,000+</SelectItem>
                         <SelectItem value="500000">$500,000+</SelectItem>
                         <SelectItem value="1000000">$1,000,000+</SelectItem>
@@ -483,7 +507,7 @@ const Lists = () => {
                         <SelectValue placeholder="All Stages" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Stages</SelectItem>
+                        <SelectItem value="">All Stages</SelectItem>
                         <SelectItem value="Initial Screening">Initial Screening</SelectItem>
                         <SelectItem value="Initial Meeting">Initial Meeting</SelectItem>
                         <SelectItem value="Follow-up Meeting">Follow-up Meeting</SelectItem>
@@ -491,6 +515,46 @@ const Lists = () => {
                         <SelectItem value="Negotiation">Negotiation</SelectItem>
                         <SelectItem value="Term Sheet Issued">Term Sheet Issued</SelectItem>
                         <SelectItem value="Closed">Closed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs">Sector</Label>
+                    <Select
+                      value={filters.sector || ''}
+                      onValueChange={(value) => handleFilterChange('sector', value || null)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All Sectors" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Sectors</SelectItem>
+                        <SelectItem value="Technology">Technology</SelectItem>
+                        <SelectItem value="Healthcare">Healthcare</SelectItem>
+                        <SelectItem value="Finance">Finance</SelectItem>
+                        <SelectItem value="Consumer">Consumer</SelectItem>
+                        <SelectItem value="Energy">Energy</SelectItem>
+                        <SelectItem value="Real Estate">Real Estate</SelectItem>
+                        <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs">Week Deals</Label>
+                    <Select
+                      value={filters.weekDeals || ''}
+                      onValueChange={(value) => handleFilterChange('weekDeals', value || null)}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="All Deals" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Deals</SelectItem>
+                        <SelectItem value="Yes">Yes</SelectItem>
+                        <SelectItem value="No">No</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
