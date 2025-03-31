@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface FilterState {
   status: string | null;
@@ -34,7 +35,21 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
   onSaveList
 }) => {
   const [listName, setListName] = useState('');
+  const [selectedFilters, setSelectedFilters] = useState<Record<keyof FilterState, boolean>>({
+    searchTerm: !!currentFilters.searchTerm,
+    status: !!currentFilters.status,
+    assignedTo: !!currentFilters.assignedTo,
+    minAmount: !!currentFilters.minAmount,
+    stage: !!currentFilters.stage
+  });
   const { toast } = useToast();
+
+  const handleFilterToggle = (filterKey: keyof FilterState) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterKey]: !prev[filterKey]
+    }));
+  };
 
   const handleSave = () => {
     if (!listName.trim()) {
@@ -46,8 +61,24 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
       return;
     }
 
-    onSaveList(listName, currentFilters);
+    // Create filtered version of currentFilters based on selected checkboxes
+    const filteredFilters = Object.keys(selectedFilters).reduce((acc, key) => {
+      const filterKey = key as keyof FilterState;
+      return {
+        ...acc,
+        [filterKey]: selectedFilters[filterKey] ? currentFilters[filterKey] : null
+      };
+    }, {} as FilterState);
+
+    onSaveList(listName, filteredFilters);
     setListName('');
+    setSelectedFilters({
+      searchTerm: false,
+      status: false,
+      assignedTo: false,
+      minAmount: false,
+      stage: false
+    });
     onOpenChange(false);
     
     toast({
@@ -62,7 +93,7 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Save Current List</DialogTitle>
           <DialogDescription>
-            Create a new list with your current filters and search criteria.
+            Create a new list with your selected filters and search criteria.
           </DialogDescription>
         </DialogHeader>
         
@@ -81,32 +112,72 @@ const DealListSaveDialog: React.FC<DealListSaveDialogProps> = ({
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm font-medium">Current Filters</p>
-              <div className="rounded-md bg-gray-50 p-3 text-sm">
+              <p className="text-sm font-medium">Select Filters to Include</p>
+              <div className="rounded-md bg-gray-50 p-3 space-y-3">
                 {currentFilters.searchTerm && (
-                  <p className="text-muted-foreground">
-                    Search: <span className="font-medium text-foreground">{currentFilters.searchTerm}</span>
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-search"
+                      checked={selectedFilters.searchTerm}
+                      onCheckedChange={() => handleFilterToggle('searchTerm')}
+                    />
+                    <label htmlFor="filter-search" className="text-sm cursor-pointer flex-1">
+                      <span className="text-muted-foreground">Search:</span>{' '}
+                      <span className="font-medium text-foreground">{currentFilters.searchTerm}</span>
+                    </label>
+                  </div>
                 )}
                 {currentFilters.status && (
-                  <p className="text-muted-foreground">
-                    Status: <span className="font-medium text-foreground">{currentFilters.status}</span>
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-status"
+                      checked={selectedFilters.status}
+                      onCheckedChange={() => handleFilterToggle('status')}
+                    />
+                    <label htmlFor="filter-status" className="text-sm cursor-pointer flex-1">
+                      <span className="text-muted-foreground">Status:</span>{' '}
+                      <span className="font-medium text-foreground">{currentFilters.status}</span>
+                    </label>
+                  </div>
                 )}
                 {currentFilters.assignedTo && (
-                  <p className="text-muted-foreground">
-                    Assigned To: <span className="font-medium text-foreground">{currentFilters.assignedTo}</span>
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-assigned"
+                      checked={selectedFilters.assignedTo}
+                      onCheckedChange={() => handleFilterToggle('assignedTo')}
+                    />
+                    <label htmlFor="filter-assigned" className="text-sm cursor-pointer flex-1">
+                      <span className="text-muted-foreground">Assigned To:</span>{' '}
+                      <span className="font-medium text-foreground">{currentFilters.assignedTo}</span>
+                    </label>
+                  </div>
                 )}
                 {currentFilters.minAmount && (
-                  <p className="text-muted-foreground">
-                    Min Amount: <span className="font-medium text-foreground">${currentFilters.minAmount.toLocaleString()}</span>
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-amount"
+                      checked={selectedFilters.minAmount}
+                      onCheckedChange={() => handleFilterToggle('minAmount')}
+                    />
+                    <label htmlFor="filter-amount" className="text-sm cursor-pointer flex-1">
+                      <span className="text-muted-foreground">Min Amount:</span>{' '}
+                      <span className="font-medium text-foreground">${currentFilters.minAmount.toLocaleString()}</span>
+                    </label>
+                  </div>
                 )}
                 {currentFilters.stage && (
-                  <p className="text-muted-foreground">
-                    Stage: <span className="font-medium text-foreground">{currentFilters.stage}</span>
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="filter-stage"
+                      checked={selectedFilters.stage}
+                      onCheckedChange={() => handleFilterToggle('stage')}
+                    />
+                    <label htmlFor="filter-stage" className="text-sm cursor-pointer flex-1">
+                      <span className="text-muted-foreground">Stage:</span>{' '}
+                      <span className="font-medium text-foreground">{currentFilters.stage}</span>
+                    </label>
+                  </div>
                 )}
                 {!currentFilters.searchTerm && !currentFilters.status && !currentFilters.assignedTo && 
                  !currentFilters.minAmount && !currentFilters.stage && (
