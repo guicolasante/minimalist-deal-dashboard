@@ -1,4 +1,3 @@
-
 import { Deal, DealStatus, StatusCount, User } from './types';
 
 export const MOCK_USERS: User[] = [
@@ -40,6 +39,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Mike Johnson',
     contactEmail: 'mike@techinnovators.com',
     notes: 'CEO has strong background in machine learning',
+    weekDeals: 'W42',
+    sector: 'Technology',
   },
   {
     id: '2',
@@ -55,6 +56,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Sarah Chen',
     contactEmail: 'sarah@greenenergy.com',
     notes: 'Impressive traction in European markets',
+    weekDeals: 'W38',
+    sector: 'Energy',
   },
   {
     id: '3',
@@ -70,6 +73,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Dr. Robert Kim',
     contactEmail: 'robert@healthtechglobal.com',
     notes: 'Strong revenue growth in the past two quarters',
+    weekDeals: 'W32',
+    sector: 'Healthcare',
   },
   {
     id: '4',
@@ -85,6 +90,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'David Miller',
     contactEmail: 'david@logitech.com',
     notes: 'Currently on hold pending market analysis',
+    weekDeals: 'W27',
+    sector: 'Manufacturing',
   },
   {
     id: '5',
@@ -100,6 +107,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Alex Rivera',
     contactEmail: 'alex@fintechdisruptors.com',
     notes: 'Passed due to regulatory concerns in target markets',
+    weekDeals: 'W40',
+    sector: 'Finance',
   },
   {
     id: '6',
@@ -115,6 +124,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Lisa Wong',
     contactEmail: 'lisa@urbanmobility.com',
     notes: 'Performing above expectations in first markets',
+    weekDeals: 'W20',
+    sector: 'Consumer',
   },
   {
     id: '7',
@@ -130,6 +141,8 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'James Taylor',
     contactEmail: 'james@edtechpioneers.com',
     notes: 'Strong team with previous exits in education space',
+    weekDeals: 'W37',
+    sector: 'Technology',
   },
 ];
 

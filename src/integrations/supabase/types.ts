@@ -22,8 +22,10 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          sector: string | null
           stage: string
           status: string
+          week_deals: string | null
         }
         Insert: {
           amount?: number
@@ -37,8 +39,10 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          sector?: string | null
           stage: string
           status: string
+          week_deals?: string | null
         }
         Update: {
           amount?: number
@@ -52,8 +56,10 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          sector?: string | null
           stage?: string
           status?: string
+          week_deals?: string | null
         }
         Relationships: []
       }
