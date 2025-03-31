@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -92,7 +91,6 @@ const Lists = () => {
   };
 
   const applyFilters = (deal: Deal) => {
-    // Apply search filter first
     if (
       searchTerm &&
       !deal.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -101,7 +99,6 @@ const Lists = () => {
       return false;
     }
 
-    // Apply other filters
     if (filters.status && deal.status !== filters.status) {
       return false;
     }
@@ -302,7 +299,7 @@ const Lists = () => {
                           <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Statuses</SelectItem>
+                          <SelectItem value="all">All Statuses</SelectItem>
                           <SelectItem value="Pass">Pass</SelectItem>
                           <SelectItem value="Engage">Engage</SelectItem>
                           <SelectItem value="OnHold">On Hold</SelectItem>
@@ -323,7 +320,7 @@ const Lists = () => {
                           <SelectValue placeholder="All Users" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Users</SelectItem>
+                          <SelectItem value="all">All Users</SelectItem>
                           {MOCK_USERS.map(user => (
                             <SelectItem key={user.id} value={user.name}>
                               {user.name}
@@ -343,7 +340,7 @@ const Lists = () => {
                           <SelectValue placeholder="Any Amount" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any Amount</SelectItem>
+                          <SelectItem value="any">Any Amount</SelectItem>
                           <SelectItem value="100000">$100,000+</SelectItem>
                           <SelectItem value="500000">$500,000+</SelectItem>
                           <SelectItem value="1000000">$1,000,000+</SelectItem>
@@ -362,7 +359,7 @@ const Lists = () => {
                           <SelectValue placeholder="All Stages" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All Stages</SelectItem>
+                          <SelectItem value="all">All Stages</SelectItem>
                           <SelectItem value="Initial Screening">Initial Screening</SelectItem>
                           <SelectItem value="Initial Meeting">Initial Meeting</SelectItem>
                           <SelectItem value="Follow-up Meeting">Follow-up Meeting</SelectItem>
