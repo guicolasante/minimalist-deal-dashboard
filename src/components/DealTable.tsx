@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Table,
@@ -7,12 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -24,6 +19,7 @@ import {
   PlusCircle,
   Search,
   Trash2,
+  Settings, // Add this import
 } from 'lucide-react';
 import { Deal } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -100,6 +96,11 @@ const DealTable: React.FC<DealTableProps> = ({
             </div>
             
             <div className="flex gap-2 w-full sm:w-auto justify-between">
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Settings className="h-4 w-4 text-gray-500" />
+                <span>Settings</span>
+              </Button>
+
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <Filter className="h-4 w-4 text-gray-500" />
                 <span>Filter</span>
