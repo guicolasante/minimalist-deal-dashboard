@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Deal } from '@/lib/types';
+import { Filter, Download, PlusCircle, Settings } from 'lucide-react';
 
 // Define FilterState interface
 export interface FilterState {
@@ -76,11 +78,37 @@ const Lists = () => {
     return true;
   });
 
+  // Handle new list creation
+  const handleCreateNewList = () => {
+    console.log('Create new list');
+    // Implementation for creating a new list would go here
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto py-6 px-4">
-        <h1 className="text-2xl font-bold mb-6">Deal Lists</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Deal Lists</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Settings className="h-4 w-4 text-gray-500" />
+              <span>Settings</span>
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Filter className="h-4 w-4 text-gray-500" />
+              <span>Filter</span>
+            </Button>
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Download className="h-4 w-4 text-gray-500" />
+              <span>Export</span>
+            </Button>
+            <Button size="sm" className="flex items-center gap-1" onClick={handleCreateNewList}>
+              <PlusCircle className="h-4 w-4" />
+              <span>New List</span>
+            </Button>
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <Card>
