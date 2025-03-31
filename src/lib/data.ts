@@ -1,3 +1,4 @@
+
 import { Deal, DealStatus, StatusCount, User } from './types';
 
 export const MOCK_USERS: User[] = [
@@ -39,7 +40,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Mike Johnson',
     contactEmail: 'mike@techinnovators.com',
     notes: 'CEO has strong background in machine learning',
-    weekDeals: 'W42',
+    weekDeals: 'Yes',
     sector: 'Technology',
   },
   {
@@ -56,7 +57,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Sarah Chen',
     contactEmail: 'sarah@greenenergy.com',
     notes: 'Impressive traction in European markets',
-    weekDeals: 'W38',
+    weekDeals: 'Yes',
     sector: 'Energy',
   },
   {
@@ -73,7 +74,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Dr. Robert Kim',
     contactEmail: 'robert@healthtechglobal.com',
     notes: 'Strong revenue growth in the past two quarters',
-    weekDeals: 'W32',
+    weekDeals: 'Yes',
     sector: 'Healthcare',
   },
   {
@@ -90,7 +91,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'David Miller',
     contactEmail: 'david@logitech.com',
     notes: 'Currently on hold pending market analysis',
-    weekDeals: 'W27',
+    weekDeals: 'Yes',
     sector: 'Manufacturing',
   },
   {
@@ -107,7 +108,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Alex Rivera',
     contactEmail: 'alex@fintechdisruptors.com',
     notes: 'Passed due to regulatory concerns in target markets',
-    weekDeals: 'W40',
+    weekDeals: 'No',
     sector: 'Finance',
   },
   {
@@ -124,7 +125,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'Lisa Wong',
     contactEmail: 'lisa@urbanmobility.com',
     notes: 'Performing above expectations in first markets',
-    weekDeals: 'W20',
+    weekDeals: 'No',
     sector: 'Consumer',
   },
   {
@@ -141,7 +142,7 @@ export const MOCK_DEALS: Deal[] = [
     contactName: 'James Taylor',
     contactEmail: 'james@edtechpioneers.com',
     notes: 'Strong team with previous exits in education space',
-    weekDeals: 'W37',
+    weekDeals: 'Yes',
     sector: 'Technology',
   },
 ];

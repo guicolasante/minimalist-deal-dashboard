@@ -30,7 +30,7 @@ export const fetchDeals = async (): Promise<Deal[]> => {
     contactName: deal.contact_name || '',
     contactEmail: deal.contact_email || '',
     notes: deal.notes || '',
-    weekDeals: deal.week_deals || '',
+    weekDeals: (deal.week_deals === 'Yes' ? 'Yes' : 'No') as 'Yes' | 'No',
     sector: deal.sector || ''
   }));
 };
@@ -80,7 +80,7 @@ export const addDeal = async (deal: Omit<Deal, 'id'>): Promise<Deal> => {
     contactName: data.contact_name || '',
     contactEmail: data.contact_email || '',
     notes: data.notes || '',
-    weekDeals: data.week_deals || '',
+    weekDeals: (data.week_deals === 'Yes' ? 'Yes' : 'No') as 'Yes' | 'No',
     sector: data.sector || ''
   };
 };
@@ -132,7 +132,7 @@ export const updateDeal = async (deal: Deal): Promise<Deal> => {
     contactName: data.contact_name || '',
     contactEmail: data.contact_email || '',
     notes: data.notes || '',
-    weekDeals: data.week_deals || '',
+    weekDeals: (data.week_deals === 'Yes' ? 'Yes' : 'No') as 'Yes' | 'No',
     sector: data.sector || ''
   };
 };
