@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -75,28 +76,53 @@ const Lists = () => {
     {
       id: '1',
       name: 'All Active Deals',
-      filters: {},
+      filters: {
+        status: null,
+        assignedTo: null,
+        minAmount: null,
+        stage: null
+      },
       isActive: true
     },
     {
       id: '2',
       name: 'High Value Deals',
-      filters: { minAmount: 500000 }
+      filters: {
+        status: null,
+        assignedTo: null,
+        minAmount: 500000,
+        stage: null
+      }
     },
     {
       id: '3',
       name: 'My Assigned Deals',
-      filters: { assignedTo: 'John Doe' }
+      filters: {
+        status: null,
+        assignedTo: 'John Doe',
+        minAmount: null,
+        stage: null
+      }
     },
     {
       id: '4',
       name: 'Term Sheets',
-      filters: { stage: 'Term Sheet Issued' }
+      filters: {
+        status: null,
+        assignedTo: null,
+        minAmount: null,
+        stage: 'Term Sheet Issued'
+      }
     },
     {
       id: '5',
       name: 'Portfolio Companies',
-      filters: { status: 'Portfolio' }
+      filters: {
+        status: 'Portfolio',
+        assignedTo: null,
+        minAmount: null,
+        stage: null
+      }
     }
   ]);
   const { toast } = useToast();
