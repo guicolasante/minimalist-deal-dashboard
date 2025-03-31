@@ -9,10 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDefinition } from '@/components/ColumnSettingsDrawer';
 import { FilterState } from './types';
 import { Deal } from '@/lib/types';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface FilterControlsProps {
   activeFilters: string[];
@@ -43,24 +46,53 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   const renderFilterInput = (column: ColumnDefinition) => {
     switch(column.type) {
       case 'singleSelect':
-        return (
-          <Select 
-            onValueChange={(value) => handleFilterChange(column.key, value)}
-            value={filters[column.key] || "all"}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={`All ${column.name}`} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All {column.name}s</SelectItem>
-              {getUniqueValues(column.key as keyof Deal).map((value) => (
-                <SelectItem key={value as string} value={value as string}>
-                  {value as string}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
+        // For single select columns like 'status', 'weekDeals', 'sector'
+        if (column.options && column.options.length > 0) {
+          // Use predefined options from column definition
+          return (
+            <div className="space-y-2">
+              <RadioGroup 
+                value={filters[column.key] || "all"}
+                onValueChange={(value) => handleFilterChange(column.key, value)}
+                className="flex flex-col space-y-1"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id={`${column.key}-all`} />
+                  <Label htmlFor={`${column.key}-all`}>All {column.name}s</Label>
+                </div>
+                {column.options.map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option} id={`${column.key}-${option}`} />
+                    <Label htmlFor={`${column.key}-${option}`}>{option}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          );
+        } else {
+          // Use values from the actual data if no predefined options
+          const uniqueValues = getUniqueValues(column.key as keyof Deal);
+          return (
+            <div className="space-y-2">
+              <RadioGroup 
+                value={filters[column.key] || "all"}
+                onValueChange={(value) => handleFilterChange(column.key, value)}
+                className="flex flex-col space-y-1"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id={`${column.key}-all`} />
+                  <Label htmlFor={`${column.key}-all`}>All {column.name}s</Label>
+                </div>
+                {uniqueValues.map((value) => (
+                  <div key={value as string} className="flex items-center space-x-2">
+                    <RadioGroupItem value={value as string} id={`${column.key}-${value}`} />
+                    <Label htmlFor={`${column.key}-${value}`}>{value as string}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          );
+        }
       
       case 'currency':
         return (

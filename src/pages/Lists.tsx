@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
@@ -45,8 +44,8 @@ const Lists = () => {
       delete newFilters[key];
       setFilters(newFilters);
       
-      // Remove from active filters list
-      setActiveFilters(prev => prev.filter(filter => filter !== key));
+      // Keep the filter in the active filters list but with no value
+      // This way the user can still see and interact with the filter
     } else {
       setFilters(prev => ({
         ...prev,
@@ -80,6 +79,8 @@ const Lists = () => {
     
     return deals.filter(deal => {
       for (const [key, value] of Object.entries(filters)) {
+        if (value === undefined || value === null || value === '') continue;
+        
         // For number filters (like amount), handle ranges
         if (key === 'amount' && typeof value === 'number') {
           if (deal.amount < value) return false;
@@ -90,8 +91,8 @@ const Lists = () => {
           const filterDate = new Date(value);
           if (dealDate < filterDate) return false;
         }
-        // For text and select fields, do exact match
-        else if (deal[key as keyof Deal] !== value) {
+        // For single-select values, exactly match the selected value
+        else if (value !== 'all' && deal[key as keyof Deal] !== value) {
           return false;
         }
       }
