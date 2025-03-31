@@ -15,6 +15,8 @@ export interface Deal {
   contactName: string;
   contactEmail: string;
   notes: string;
+  weekDeals: string;
+  sector: string;
 }
 
 export interface StatusCount {

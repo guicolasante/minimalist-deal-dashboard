@@ -49,6 +49,8 @@ const DealForm: React.FC<DealFormProps> = ({
       contactName: '',
       contactEmail: '',
       notes: '',
+      weekDeals: '',
+      sector: '',
     }
   );
 
@@ -69,6 +71,8 @@ const DealForm: React.FC<DealFormProps> = ({
         contactName: '',
         contactEmail: '',
         notes: '',
+        weekDeals: '',
+        sector: '',
       });
     }
   }, [initialDeal, open]);
@@ -212,6 +216,43 @@ const DealForm: React.FC<DealFormProps> = ({
                         {user.name}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* New Fields: Week Deals and Sector */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="weekDeals">Week Deals</Label>
+                <Input
+                  id="weekDeals"
+                  name="weekDeals"
+                  placeholder="Week number (e.g., W32)"
+                  value={formData.weekDeals || ''}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="sector">Sector</Label>
+                <Select
+                  name="sector"
+                  value={formData.sector || ''}
+                  onValueChange={(value) => handleSelectChange('sector', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sector" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Technology">Technology</SelectItem>
+                    <SelectItem value="Healthcare">Healthcare</SelectItem>
+                    <SelectItem value="Finance">Finance</SelectItem>
+                    <SelectItem value="Consumer">Consumer</SelectItem>
+                    <SelectItem value="Energy">Energy</SelectItem>
+                    <SelectItem value="Real Estate">Real Estate</SelectItem>
+                    <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

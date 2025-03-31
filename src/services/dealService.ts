@@ -29,7 +29,9 @@ export const fetchDeals = async (): Promise<Deal[]> => {
     description: deal.description || '',
     contactName: deal.contact_name || '',
     contactEmail: deal.contact_email || '',
-    notes: deal.notes || ''
+    notes: deal.notes || '',
+    weekDeals: deal.week_deals || '',
+    sector: deal.sector || ''
   }));
 };
 
@@ -47,7 +49,9 @@ export const addDeal = async (deal: Omit<Deal, 'id'>): Promise<Deal> => {
       description: deal.description,
       contact_name: deal.contactName,
       contact_email: deal.contactEmail,
-      notes: deal.notes
+      notes: deal.notes,
+      week_deals: deal.weekDeals,
+      sector: deal.sector
     })
     .select()
     .single();
@@ -75,7 +79,9 @@ export const addDeal = async (deal: Omit<Deal, 'id'>): Promise<Deal> => {
     description: data.description || '',
     contactName: data.contact_name || '',
     contactEmail: data.contact_email || '',
-    notes: data.notes || ''
+    notes: data.notes || '',
+    weekDeals: data.week_deals || '',
+    sector: data.sector || ''
   };
 };
 
@@ -94,7 +100,9 @@ export const updateDeal = async (deal: Deal): Promise<Deal> => {
       description: deal.description,
       contact_name: deal.contactName,
       contact_email: deal.contactEmail,
-      notes: deal.notes
+      notes: deal.notes,
+      week_deals: deal.weekDeals,
+      sector: deal.sector
     })
     .eq('id', deal.id)
     .select()
@@ -123,7 +131,9 @@ export const updateDeal = async (deal: Deal): Promise<Deal> => {
     description: data.description || '',
     contactName: data.contact_name || '',
     contactEmail: data.contact_email || '',
-    notes: data.notes || ''
+    notes: data.notes || '',
+    weekDeals: data.week_deals || '',
+    sector: data.sector || ''
   };
 };
 
