@@ -19,22 +19,32 @@ import { Input } from '@/components/ui/input';
 import {
   ChevronDown,
   Download,
+  Edit,
   Filter,
   MoreHorizontal,
   PlusCircle,
   Search,
+  Trash2,
 } from 'lucide-react';
 import { Deal } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_DEALS } from '@/lib/data';
 
 interface DealTableProps {
-  onAddDeal?: () => void;
+  deals: Deal[];
+  isLoading?: boolean;
+  onAddDeal: () => void;
+  onEditDeal: (deal: Deal) => void;
+  onDeleteDeal: (id: string) => void;
 }
 
-const DealTable: React.FC<DealTableProps> = ({ onAddDeal }) => {
+const DealTable: React.FC<DealTableProps> = ({ 
+  deals, 
+  isLoading = false,
+  onAddDeal,
+  onEditDeal,
+  onDeleteDeal
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [deals, setDeals] = useState<Deal[]>(MOCK_DEALS);
 
   const filteredDeals = deals.filter((deal) =>
     deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,61 +119,73 @@ const DealTable: React.FC<DealTableProps> = ({ onAddDeal }) => {
       </div>
       
       <div className="relative overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Deal Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Date Received</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredDeals.length > 0 ? (
-              filteredDeals.map((deal) => (
-                <TableRow key={deal.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">{deal.name}</TableCell>
-                  <TableCell>{deal.company}</TableCell>
-                  <TableCell>
-                    <Badge className={`font-normal ${getStatusBadgeColor(deal.status)}`}>
-                      {deal.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(deal.amount)}
-                  </TableCell>
-                  <TableCell>{deal.assignedTo}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {new Date(deal.dateReceived).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+        {isLoading ? (
+          <div className="py-12 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+            <p className="mt-2 text-sm text-gray-500">Loading deals...</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Deal Name</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Assigned To</TableHead>
+                <TableHead>Date Received</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredDeals.length > 0 ? (
+                filteredDeals.map((deal) => (
+                  <TableRow key={deal.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium">{deal.name}</TableCell>
+                    <TableCell>{deal.company}</TableCell>
+                    <TableCell>
+                      <Badge className={`font-normal ${getStatusBadgeColor(deal.status)}`}>
+                        {deal.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {formatCurrency(deal.amount)}
+                    </TableCell>
+                    <TableCell>{deal.assignedTo}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(deal.dateReceived).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEditDeal(deal)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDeleteDeal(deal.id)} className="text-red-600">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                    {searchTerm ? 'No deals found. Try adjusting your search.' : 'No deals yet. Add your first deal!'}
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
-                  No deals found. Try adjusting your search.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              )}
+            </TableBody>
+          </Table>
+        )}
       </div>
       
       <div className="p-4 border-t flex justify-between items-center text-sm text-muted-foreground">

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,6 +52,27 @@ const DealForm: React.FC<DealFormProps> = ({
     }
   );
 
+  // Update form when initialDeal changes (for editing)
+  useEffect(() => {
+    if (initialDeal) {
+      setFormData(initialDeal);
+    } else {
+      // Reset form if not editing
+      setFormData({
+        name: '',
+        company: '',
+        status: 'Engage' as DealStatus,
+        amount: 0,
+        stage: '',
+        assignedTo: '',
+        description: '',
+        contactName: '',
+        contactEmail: '',
+        notes: '',
+      });
+    }
+  }, [initialDeal, open]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -77,7 +98,6 @@ const DealForm: React.FC<DealFormProps> = ({
     };
     
     onSave(dealData);
-    onOpenChange(false);
   };
 
   return (
