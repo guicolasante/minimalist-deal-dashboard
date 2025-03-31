@@ -21,7 +21,12 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
   };
 
   const formatCellValue = () => {
-    const value = deal[column.key as keyof Deal];
+    // Fix the case sensitivity issue by standardizing the key
+    const key = column.key as keyof Deal;
+    const value = deal[key];
+    
+    // Debug what values we're getting
+    console.log(`Rendering cell for column: ${column.key}, value:`, value);
     
     switch (column.type) {
       case 'currency':
@@ -36,12 +41,12 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
           return <DealStatusBadge status={value as any} />;
         }
         // Display weekDeals as Yes/No badge
-        if (column.key === 'weekDeals' && typeof value === 'string') {
+        if (column.key === 'weekDeals' && value) {
           return (
             <Badge 
               className={`${value === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} font-medium`}
             >
-              {value}
+              {value as string}
             </Badge>
           );
         }
@@ -51,9 +56,6 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
         return value;
     }
   };
-
-  // Add debugging to see what's happening
-  console.log(`Rendering cell for column: ${column.key}, value:`, deal[column.key as keyof Deal]);
   
   return formatCellValue();
 };
