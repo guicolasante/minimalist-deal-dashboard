@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Table,
@@ -38,7 +37,7 @@ interface DealTableProps {
 }
 
 const DealTable: React.FC<DealTableProps> = ({ 
-  deals, 
+  deals = [],
   isLoading = false,
   onAddDeal,
   onEditDeal,
@@ -46,11 +45,13 @@ const DealTable: React.FC<DealTableProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredDeals = deals.filter((deal) =>
-    deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    deal.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDeals = Array.isArray(deals) 
+    ? deals.filter((deal) =>
+        deal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        deal.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        deal.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : [];
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -189,7 +190,7 @@ const DealTable: React.FC<DealTableProps> = ({
       </div>
       
       <div className="p-4 border-t flex justify-between items-center text-sm text-muted-foreground">
-        <div>Showing {filteredDeals.length} of {deals.length} deals</div>
+        <div>Showing {filteredDeals.length} of {Array.isArray(deals) ? deals.length : 0} deals</div>
         <div className="flex items-center gap-1">
           <span>Show:</span>
           <Button variant="ghost" size="sm" className="h-8 flex items-center gap-1">

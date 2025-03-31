@@ -13,6 +13,8 @@ export const fetchDeals = async (): Promise<Deal[]> => {
     throw error;
   }
   
+  if (!data) return [];
+  
   // Transform Supabase data to match our Deal interface
   return data.map(deal => ({
     id: deal.id,
@@ -53,6 +55,10 @@ export const addDeal = async (deal: Omit<Deal, 'id'>): Promise<Deal> => {
   if (error) {
     console.error('Error adding deal:', error);
     throw error;
+  }
+  
+  if (!data) {
+    throw new Error("No data returned after adding deal");
   }
   
   // Transform the returned data to match our Deal interface
@@ -97,6 +103,10 @@ export const updateDeal = async (deal: Deal): Promise<Deal> => {
   if (error) {
     console.error('Error updating deal:', error);
     throw error;
+  }
+  
+  if (!data) {
+    throw new Error("No data returned after updating deal");
   }
   
   // Transform the returned data to match our Deal interface

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import DealTable from '@/components/DealTable';
@@ -21,7 +20,6 @@ import {
   Calendar,
   CircleDollarSign, 
   Layers, 
-  LucideIcon,
   ClipboardList,
   Clock,
   PlusCircle
@@ -39,6 +37,7 @@ import { Badge } from '@/components/ui/badge';
 const Index = () => {
   const [deals, setDeals] = useState<Deal[]>(MOCK_DEALS);
   const [showDealForm, setShowDealForm] = useState(false);
+  const [editingDeal, setEditingDeal] = useState<Deal | undefined>(undefined);
   const { toast } = useToast();
 
   const handleAddDeal = (newDeal: Partial<Deal>) => {
@@ -53,6 +52,21 @@ const Index = () => {
       title: "Deal Added",
       description: `${newDeal.name} has been added successfully.`,
     });
+  };
+  
+  const handleEditDeal = (deal: Deal) => {
+    setEditingDeal(deal);
+    setShowDealForm(true);
+  };
+  
+  const handleDeleteDeal = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this deal?')) {
+      setDeals(deals.filter(deal => deal.id !== id));
+      toast({
+        title: "Deal Deleted",
+        description: "The deal has been deleted successfully.",
+      });
+    }
   };
 
   return (
@@ -107,7 +121,12 @@ const Index = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2">
-            <DealTable onAddDeal={() => setShowDealForm(true)} />
+            <DealTable 
+              deals={deals}
+              onAddDeal={() => setShowDealForm(true)}
+              onEditDeal={handleEditDeal}
+              onDeleteDeal={handleDeleteDeal}
+            />
           </div>
           
           <div className="lg:col-span-1 space-y-6">
@@ -198,7 +217,11 @@ const Index = () => {
       
       <DealForm
         open={showDealForm}
-        onOpenChange={setShowDealForm}
+        onOpenChange={(open) => {
+          setShowDealForm(open);
+          if (!open) setEditingDeal(undefined);
+        }}
+        initialDeal={editingDeal}
         onSave={handleAddDeal}
       />
     </div>
