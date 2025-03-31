@@ -1,4 +1,3 @@
-
 export type DealStatus = 'Pass' | 'Engage' | 'OnHold' | 'BusinessDD' | 'TermSheet' | 'Portfolio';
 
 export interface Deal {
@@ -15,7 +14,7 @@ export interface Deal {
   contactName: string;
   contactEmail: string;
   notes: string;
-  weekDeals: string;
+  weekDeals: 'Yes' | 'No';
   sector: string;
 }
 

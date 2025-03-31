@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,17 +48,15 @@ const DealForm: React.FC<DealFormProps> = ({
       contactName: '',
       contactEmail: '',
       notes: '',
-      weekDeals: '',
+      weekDeals: 'No',
       sector: '',
     }
   );
 
-  // Update form when initialDeal changes (for editing)
   useEffect(() => {
     if (initialDeal) {
       setFormData(initialDeal);
     } else {
-      // Reset form if not editing
       setFormData({
         name: '',
         company: '',
@@ -71,7 +68,7 @@ const DealForm: React.FC<DealFormProps> = ({
         contactName: '',
         contactEmail: '',
         notes: '',
-        weekDeals: '',
+        weekDeals: 'No',
         sector: '',
       });
     }
@@ -94,7 +91,6 @@ const DealForm: React.FC<DealFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Add timestamps
     const dealData = {
       ...formData,
       dateReceived: formData.dateReceived || new Date().toISOString().split('T')[0],
@@ -104,18 +100,15 @@ const DealForm: React.FC<DealFormProps> = ({
     onSave(dealData);
   };
 
-  // Generate options for week deals dropdown based on current and previous weeks
   const generateWeekOptions = () => {
     const options = [];
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     
-    // Get current week number
     const startDate = new Date(currentYear, 0, 1);
     const days = Math.floor((currentDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
     const currentWeek = Math.ceil(days / 7);
     
-    // Generate options for current and previous 25 weeks
     for (let i = 0; i <= 25; i++) {
       const weekNum = currentWeek - i;
       if (weekNum > 0) {
@@ -245,24 +238,20 @@ const DealForm: React.FC<DealFormProps> = ({
               </div>
             </div>
             
-            {/* Update: Week Deals is now a select field instead of text input */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="weekDeals">Week Deals</Label>
                 <Select
                   name="weekDeals"
-                  value={formData.weekDeals || ''}
+                  value={formData.weekDeals || 'No'}
                   onValueChange={(value) => handleSelectChange('weekDeals', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select week" />
+                    <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    {weekOptions.map((week) => (
-                      <SelectItem key={week} value={week}>
-                        {week}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="Yes">Yes</SelectItem>
+                    <SelectItem value="No">No</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
