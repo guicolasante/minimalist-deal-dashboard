@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -32,7 +31,6 @@ import { Badge } from '@/components/ui/badge';
 import ColumnSettingsDrawer, { ColumnDefinition } from './ColumnSettingsDrawer';
 import { useToast } from '@/components/ui/use-toast';
 
-// Default column definitions
 const defaultColumns: ColumnDefinition[] = [
   { id: '1', name: 'Deal Name', key: 'name', type: 'text', required: true, visible: true, order: 0 },
   { id: '2', name: 'Company', key: 'company', type: 'text', required: true, visible: true, order: 1 },
@@ -61,7 +59,6 @@ const DealTable: React.FC<DealTableProps> = ({
   const [columns, setColumns] = useState<ColumnDefinition[]>(defaultColumns);
   const { toast } = useToast();
 
-  // Load saved columns from localStorage on initial render
   useEffect(() => {
     const savedColumns = localStorage.getItem('dealTableColumns');
     if (savedColumns) {
@@ -74,7 +71,6 @@ const DealTable: React.FC<DealTableProps> = ({
     }
   }, []);
 
-  // Save columns to localStorage when they change
   const handleColumnsChange = (newColumns: ColumnDefinition[]) => {
     setColumns(newColumns);
     localStorage.setItem('dealTableColumns', JSON.stringify(newColumns));
@@ -120,7 +116,6 @@ const DealTable: React.FC<DealTableProps> = ({
     }).format(amount);
   };
 
-  // Format cell value based on column type
   const formatCellValue = (deal: Deal, column: ColumnDefinition) => {
     const value = deal[column.key as keyof Deal];
     
@@ -128,7 +123,7 @@ const DealTable: React.FC<DealTableProps> = ({
       case 'currency':
         return typeof value === 'number' ? formatCurrency(value) : value;
       case 'date':
-        return value instanceof Date || typeof value === 'string' 
+        return typeof value === 'string' 
           ? new Date(value).toLocaleDateString() 
           : value;
       case 'singleSelect':
@@ -142,7 +137,6 @@ const DealTable: React.FC<DealTableProps> = ({
     }
   };
 
-  // Get visible columns sorted by order
   const visibleColumns = columns
     .filter(column => column.visible)
     .sort((a, b) => a.order - b.order);
