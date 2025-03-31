@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -29,6 +29,18 @@ import {
 } from 'lucide-react';
 import { Deal } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import ColumnSettingsDrawer, { ColumnDefinition } from './ColumnSettingsDrawer';
+import { useToast } from '@/components/ui/use-toast';
+
+// Default column definitions
+const defaultColumns: ColumnDefinition[] = [
+  { id: '1', name: 'Deal Name', key: 'name', type: 'text', required: true, visible: true, order: 0 },
+  { id: '2', name: 'Company', key: 'company', type: 'text', required: true, visible: true, order: 1 },
+  { id: '3', name: 'Status', key: 'status', type: 'singleSelect', options: ['Pass', 'Engage', 'OnHold', 'BusinessDD', 'TermSheet', 'Portfolio'], required: true, visible: true, order: 2 },
+  { id: '4', name: 'Amount', key: 'amount', type: 'currency', required: true, visible: true, order: 3 },
+  { id: '5', name: 'Assigned To', key: 'assignedTo', type: 'text', required: true, visible: true, order: 4 },
+  { id: '6', name: 'Date Received', key: 'dateReceived', type: 'date', required: true, visible: true, order: 5 },
+];
 
 interface DealTableProps {
   deals: Deal[];
@@ -46,6 +58,31 @@ const DealTable: React.FC<DealTableProps> = ({
   onDeleteDeal
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [columns, setColumns] = useState<ColumnDefinition[]>(defaultColumns);
+  const { toast } = useToast();
+
+  // Load saved columns from localStorage on initial render
+  useEffect(() => {
+    const savedColumns = localStorage.getItem('dealTableColumns');
+    if (savedColumns) {
+      try {
+        const parsedColumns = JSON.parse(savedColumns);
+        setColumns(parsedColumns);
+      } catch (e) {
+        console.error('Failed to parse saved columns:', e);
+      }
+    }
+  }, []);
+
+  // Save columns to localStorage when they change
+  const handleColumnsChange = (newColumns: ColumnDefinition[]) => {
+    setColumns(newColumns);
+    localStorage.setItem('dealTableColumns', JSON.stringify(newColumns));
+    toast({
+      title: "Settings saved",
+      description: "Your table configuration has been updated.",
+    });
+  };
 
   const filteredDeals = Array.isArray(deals) 
     ? deals.filter((deal) =>
@@ -83,6 +120,33 @@ const DealTable: React.FC<DealTableProps> = ({
     }).format(amount);
   };
 
+  // Format cell value based on column type
+  const formatCellValue = (deal: Deal, column: ColumnDefinition) => {
+    const value = deal[column.key as keyof Deal];
+    
+    switch (column.type) {
+      case 'currency':
+        return typeof value === 'number' ? formatCurrency(value) : value;
+      case 'date':
+        return value instanceof Date || typeof value === 'string' 
+          ? new Date(value).toLocaleDateString() 
+          : value;
+      case 'singleSelect':
+        return typeof value === 'string' ? (
+          <Badge className={`font-normal ${getStatusBadgeColor(value)}`}>
+            {value}
+          </Badge>
+        ) : value;
+      default:
+        return value;
+    }
+  };
+
+  // Get visible columns sorted by order
+  const visibleColumns = columns
+    .filter(column => column.visible)
+    .sort((a, b) => a.order - b.order);
+
   return (
     <div className="rounded-md border shadow-sm bg-white">
       <div className="p-4 border-b">
@@ -102,10 +166,12 @@ const DealTable: React.FC<DealTableProps> = ({
             </div>
             
             <div className="flex gap-2 w-full sm:w-auto justify-between">
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <Settings className="h-4 w-4 text-gray-500" />
-                <span>Settings</span>
-              </Button>
+              <ColumnSettingsDrawer columns={columns} onColumnsChange={handleColumnsChange}>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Settings className="h-4 w-4 text-gray-500" />
+                  <span>Settings</span>
+                </Button>
+              </ColumnSettingsDrawer>
 
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <Filter className="h-4 w-4 text-gray-500" />
@@ -136,12 +202,14 @@ const DealTable: React.FC<DealTableProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Deal Name</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Date Received</TableHead>
+                {visibleColumns.map(column => (
+                  <TableHead 
+                    key={column.id} 
+                    className={column.key === 'amount' ? 'text-right' : ''}
+                  >
+                    {column.name}
+                  </TableHead>
+                ))}
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -149,20 +217,16 @@ const DealTable: React.FC<DealTableProps> = ({
               {filteredDeals.length > 0 ? (
                 filteredDeals.map((deal) => (
                   <TableRow key={deal.id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium">{deal.name}</TableCell>
-                    <TableCell>{deal.company}</TableCell>
-                    <TableCell>
-                      <Badge className={`font-normal ${getStatusBadgeColor(deal.status)}`}>
-                        {deal.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(deal.amount)}
-                    </TableCell>
-                    <TableCell>{deal.assignedTo}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(deal.dateReceived).toLocaleDateString()}
-                    </TableCell>
+                    {visibleColumns.map(column => (
+                      <TableCell 
+                        key={`${deal.id}-${column.id}`}
+                        className={`${column.key === 'amount' ? 'text-right font-medium' : ''}
+                                   ${column.key === 'name' ? 'font-medium' : ''}
+                                   ${column.key === 'dateReceived' ? 'text-muted-foreground' : ''}`}
+                      >
+                        {formatCellValue(deal, column)}
+                      </TableCell>
+                    ))}
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -186,7 +250,7 @@ const DealTable: React.FC<DealTableProps> = ({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={visibleColumns.length + 1} className="text-center py-6 text-muted-foreground">
                     {searchTerm ? 'No deals found. Try adjusting your search.' : 'No deals yet. Add your first deal!'}
                   </TableCell>
                 </TableRow>
