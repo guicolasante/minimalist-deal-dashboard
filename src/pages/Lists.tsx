@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import { Deal } from '@/lib/types';
 import { ColumnDefinition } from '@/components/ColumnSettingsDrawer';
 import { defaultColumns } from '@/components/lists/defaultColumns';
-import { FilterState } from '@/components/lists/types';
+import { FilterState, FilterValue } from '@/components/lists/types';
 import FilterControls from '@/components/lists/FilterControls';
 import DealsList from '@/components/lists/DealsList';
 import ActionButtons from '@/components/lists/ActionButtons';
@@ -92,8 +93,12 @@ const Lists = () => {
           if (dealDate < filterDate) return false;
         }
         // For single-select values, exactly match the selected value
-        else if (value !== 'all' && deal[key as keyof Deal] !== value) {
-          return false;
+        else if (typeof value === 'string' && value !== 'all') {
+          // Fix: We need to explicitly check the deal property against the filter value
+          const dealValue = deal[key as keyof Deal];
+          if (dealValue !== value) {
+            return false;
+          }
         }
       }
       return true;
