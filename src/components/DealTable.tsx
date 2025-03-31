@@ -8,6 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,7 +25,7 @@ import {
   PlusCircle,
   Search,
   Trash2,
-  Settings, // Add this import
+  Settings,
 } from 'lucide-react';
 import { Deal } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
