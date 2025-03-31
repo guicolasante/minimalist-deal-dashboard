@@ -104,6 +104,30 @@ const DealForm: React.FC<DealFormProps> = ({
     onSave(dealData);
   };
 
+  // Generate options for week deals dropdown based on current and previous weeks
+  const generateWeekOptions = () => {
+    const options = [];
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    
+    // Get current week number
+    const startDate = new Date(currentYear, 0, 1);
+    const days = Math.floor((currentDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+    const currentWeek = Math.ceil(days / 7);
+    
+    // Generate options for current and previous 25 weeks
+    for (let i = 0; i <= 25; i++) {
+      const weekNum = currentWeek - i;
+      if (weekNum > 0) {
+        options.push(`W${weekNum}`);
+      }
+    }
+    
+    return options;
+  };
+
+  const weekOptions = generateWeekOptions();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -221,17 +245,26 @@ const DealForm: React.FC<DealFormProps> = ({
               </div>
             </div>
             
-            {/* New Fields: Week Deals and Sector */}
+            {/* Update: Week Deals is now a select field instead of text input */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="weekDeals">Week Deals</Label>
-                <Input
-                  id="weekDeals"
+                <Select
                   name="weekDeals"
-                  placeholder="Week number (e.g., W32)"
                   value={formData.weekDeals || ''}
-                  onChange={handleInputChange}
-                />
+                  onValueChange={(value) => handleSelectChange('weekDeals', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select week" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {weekOptions.map((week) => (
+                      <SelectItem key={week} value={week}>
+                        {week}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">

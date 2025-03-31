@@ -30,9 +30,12 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
           ? new Date(value).toLocaleDateString() 
           : value;
       case 'singleSelect':
-        return typeof value === 'string' ? (
-          <DealStatusBadge status={value as any} />
-        ) : value;
+        // Display status as badge if it's the status field
+        if (column.key === 'status' && typeof value === 'string') {
+          return <DealStatusBadge status={value as any} />;
+        } 
+        // For other singleSelect fields just return the value
+        return value;
       default:
         return value;
     }

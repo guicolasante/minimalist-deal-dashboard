@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Table,
@@ -22,7 +23,7 @@ const defaultColumns: ColumnDefinition[] = [
   { id: '4', name: 'Amount', key: 'amount', type: 'currency', required: true, visible: true, order: 3 },
   { id: '5', name: 'Assigned To', key: 'assignedTo', type: 'text', required: true, visible: true, order: 4 },
   { id: '6', name: 'Date Received', key: 'dateReceived', type: 'date', required: true, visible: true, order: 5 },
-  { id: '7', name: 'Week Deals', key: 'weekDeals', type: 'text', required: false, visible: true, order: 6 },
+  { id: '7', name: 'Week Deals', key: 'weekDeals', type: 'singleSelect', required: false, visible: true, order: 6 },
   { id: '8', name: 'Sector', key: 'sector', type: 'singleSelect', options: ['Technology', 'Healthcare', 'Finance', 'Consumer', 'Energy', 'Real Estate', 'Manufacturing', 'Other'], required: false, visible: true, order: 7 },
 ];
 
