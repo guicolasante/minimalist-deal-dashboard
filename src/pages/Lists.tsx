@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,17 +13,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Deal } from '@/lib/types';
-import { Filter, Download, PlusCircle, Settings } from 'lucide-react';
+import { Filter, Download, PlusCircle, Settings, Search, X } from 'lucide-react';
 import ColumnSettingsDrawer, { ColumnDefinition } from '@/components/ColumnSettingsDrawer';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from '@/lib/utils';
 
-// Define FilterState interface
+// Define FilterState interface - now it's dynamic to handle any column
 export interface FilterState {
-  status: string | null;
-  assignedTo: string | null;
-  minAmount: number | null;
-  stage: string | null;
-  sector: string | null;
-  weekDeals: string | null;
+  [key: string]: any;
 }
 
 const defaultColumns: ColumnDefinition[] = [
@@ -38,18 +35,13 @@ const defaultColumns: ColumnDefinition[] = [
 ];
 
 const Lists = () => {
-  const [filters, setFilters] = useState<FilterState>({
-    status: null,
-    assignedTo: null,
-    minAmount: null,
-    stage: null,
-    sector: null,
-    weekDeals: null
-  });
+  const [filters, setFilters] = useState<FilterState>({});
   const [columns, setColumns] = useState<ColumnDefinition[]>(() => {
     const savedColumns = localStorage.getItem('dealListColumns');
     return savedColumns ? JSON.parse(savedColumns) : defaultColumns;
   });
+  const [showFiltersPopover, setShowFiltersPopover] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   // Fetch deals data
   const { data: deals, isLoading } = useQuery({
@@ -70,17 +62,43 @@ const Lists = () => {
     localStorage.setItem('dealListColumns', JSON.stringify(newColumns));
   };
 
-  const handleFilterChange = (name: keyof FilterState, value: string | number | null) => {
-    // If value is "all", set it to null to clear the filter
-    const finalValue = value === 'all' ? null : value;
-    
-    setFilters(prev => ({
-      ...prev,
-      [name]: finalValue
-    }));
+  const handleFilterChange = (key: string, value: any) => {
+    // If value is "all" or empty, remove the filter
+    if (value === 'all' || value === '') {
+      const newFilters = { ...filters };
+      delete newFilters[key];
+      setFilters(newFilters);
+      
+      // Remove from active filters list
+      setActiveFilters(prev => prev.filter(filter => filter !== key));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [key]: value
+      }));
+      
+      // Add to active filters if not already there
+      if (!activeFilters.includes(key)) {
+        setActiveFilters(prev => [...prev, key]);
+      }
+    }
   };
 
-  // Get unique values for filters
+  const handleAddFilter = (key: string) => {
+    if (!activeFilters.includes(key)) {
+      setActiveFilters(prev => [...prev, key]);
+    }
+    setShowFiltersPopover(false);
+  };
+
+  const handleRemoveFilter = (key: string) => {
+    const newFilters = { ...filters };
+    delete newFilters[key];
+    setFilters(newFilters);
+    setActiveFilters(prev => prev.filter(filter => filter !== key));
+  };
+
+  // Get unique values for a specific column from the deals data
   const getUniqueValues = (key: keyof Deal) => {
     if (!deals) return [];
     
@@ -88,16 +106,92 @@ const Lists = () => {
     return [...new Set(values)].filter(Boolean);
   };
 
-  // Filter deals
-  const filteredDeals = deals?.filter(deal => {
-    if (filters.status && deal.status !== filters.status) return false;
-    if (filters.assignedTo && deal.assignedTo !== filters.assignedTo) return false;
-    if (filters.minAmount && deal.amount < filters.minAmount) return false;
-    if (filters.stage && deal.stage !== filters.stage) return false;
-    if (filters.sector && deal.sector !== filters.sector) return false;
-    if (filters.weekDeals && deal.weekDeals !== filters.weekDeals) return false;
-    return true;
-  });
+  // Filter deals based on all active filters
+  const filteredDeals = useMemo(() => {
+    if (!deals) return [];
+    
+    return deals.filter(deal => {
+      for (const [key, value] of Object.entries(filters)) {
+        // For number filters (like amount), handle ranges
+        if (key === 'amount' && typeof value === 'number') {
+          if (deal.amount < value) return false;
+        } 
+        // For dates, handle special comparison
+        else if (key === 'dateReceived' && value) {
+          const dealDate = new Date(deal.dateReceived);
+          const filterDate = new Date(value);
+          if (dealDate < filterDate) return false;
+        }
+        // For text and select fields, do exact match
+        else if (deal[key as keyof Deal] !== value) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [deals, filters]);
+
+  // Available filter columns (exclude columns already being filtered)
+  const availableFilterColumns = useMemo(() => {
+    return columns
+      .filter(col => col.visible && !activeFilters.includes(col.key))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [columns, activeFilters]);
+
+  // Generate the appropriate filter input based on column type
+  const renderFilterInput = (column: ColumnDefinition) => {
+    switch(column.type) {
+      case 'singleSelect':
+        return (
+          <Select 
+            onValueChange={(value) => handleFilterChange(column.key, value)}
+            value={filters[column.key] || "all"}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={`All ${column.name}`} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All {column.name}s</SelectItem>
+              {getUniqueValues(column.key as keyof Deal).map((value) => (
+                <SelectItem key={value as string} value={value as string}>
+                  {value as string}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      
+      case 'currency':
+        return (
+          <Input
+            type="number"
+            placeholder={`Min ${column.name}`}
+            value={filters[column.key] || ''}
+            onChange={(e) => handleFilterChange(column.key, e.target.value ? Number(e.target.value) : '')}
+          />
+        );
+      
+      case 'date':
+        return (
+          <Input
+            type="date"
+            value={filters[column.key] || ''}
+            onChange={(e) => handleFilterChange(column.key, e.target.value)}
+          />
+        );
+      
+      case 'text':
+      default:
+        return (
+          <Input
+            type="text"
+            placeholder={`Search ${column.name}`}
+            value={filters[column.key] || ''}
+            onChange={(e) => handleFilterChange(column.key, e.target.value)}
+          />
+        );
+    }
+  };
 
   // Handle new list creation
   const handleCreateNewList = () => {
@@ -121,10 +215,34 @@ const Lists = () => {
                 <span>Settings</span>
               </Button>
             </ColumnSettingsDrawer>
-            <Button variant="outline" size="sm" className="flex items-center gap-1">
-              <Filter className="h-4 w-4 text-gray-500" />
-              <span>Filter</span>
-            </Button>
+            <Popover open={showFiltersPopover} onOpenChange={setShowFiltersPopover}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <span>Filter</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60">
+                <div className="space-y-4">
+                  <h3 className="font-medium">Add Filter</h3>
+                  <div className="max-h-60 overflow-y-auto">
+                    {availableFilterColumns.length > 0 ? (
+                      availableFilterColumns.map(column => (
+                        <button
+                          key={column.id}
+                          className="block w-full text-left px-2 py-1.5 hover:bg-gray-100 rounded"
+                          onClick={() => handleAddFilter(column.key)}
+                        >
+                          {column.name}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">All filters already added</p>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" size="sm" className="flex items-center gap-1">
               <Download className="h-4 w-4 text-gray-500" />
               <span>Export</span>
@@ -142,54 +260,32 @@ const Lists = () => {
               <CardTitle className="text-lg">Filters</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
-                <Select 
-                  onValueChange={(value) => handleFilterChange('status', value)}
-                  value={filters.status || "all"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    {getUniqueValues('status').map((status) => (
-                      <SelectItem key={status as string} value={status as string}>
-                        {status as string}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Assigned To</label>
-                <Select 
-                  onValueChange={(value) => handleFilterChange('assignedTo', value)}
-                  value={filters.assignedTo || "all"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Users" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Users</SelectItem>
-                    {getUniqueValues('assignedTo').map((user) => (
-                      <SelectItem key={user as string} value={user as string}>
-                        {user as string}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-2">Min Amount</label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  onChange={(e) => handleFilterChange('minAmount', e.target.value ? Number(e.target.value) : null)}
-                />
-              </div>
+              {activeFilters.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">No filters selected</p>
+                  <p className="text-xs text-gray-400 mt-1">Click the Filter button to add filters</p>
+                </div>
+              ) : (
+                activeFilters.map(filterKey => {
+                  const column = columns.find(col => col.key === filterKey);
+                  if (!column) return null;
+                  
+                  return (
+                    <div key={column.key} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <label className="block text-sm font-medium">{column.name}</label>
+                        <button 
+                          className="text-gray-400 hover:text-gray-600" 
+                          onClick={() => handleRemoveFilter(column.key)}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                      {renderFilterInput(column)}
+                    </div>
+                  );
+                })
+              )}
             </CardContent>
           </Card>
           
