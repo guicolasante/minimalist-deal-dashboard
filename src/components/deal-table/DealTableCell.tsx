@@ -37,8 +37,13 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
         }
         // Display weekDeals as Yes/No badge
         if (column.key === 'weekDeals' && typeof value === 'string') {
-          const color = value === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
-          return <Badge className={`${color} font-medium`}>{value}</Badge>;
+          return (
+            <Badge 
+              className={`${value === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} font-medium`}
+            >
+              {value}
+            </Badge>
+          );
         }
         // For other singleSelect fields just return the value
         return value;
@@ -47,6 +52,9 @@ const DealTableCell: React.FC<DealTableCellProps> = ({ deal, column }) => {
     }
   };
 
+  // Add debugging to see what's happening
+  console.log(`Rendering cell for column: ${column.key}, value:`, deal[column.key as keyof Deal]);
+  
   return formatCellValue();
 };
 
