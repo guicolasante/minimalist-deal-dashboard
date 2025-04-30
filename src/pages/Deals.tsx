@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import DealTable from '@/components/DealTable';
@@ -7,6 +7,10 @@ import DealForm from '@/components/DealForm';
 import { useToast } from '@/components/ui/use-toast';
 import { Deal } from '@/lib/types';
 import { fetchDeals, addDeal, updateDeal, deleteDeal } from '@/services/dealService';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw } from 'lucide-react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Deals = () => {
   const [showDealForm, setShowDealForm] = useState(false);
@@ -15,9 +19,11 @@ const Deals = () => {
   const queryClient = useQueryClient();
   
   // Fetch deals from Supabase
-  const { data: deals = [], isLoading, error } = useQuery({
+  const { data: deals = [], isLoading, error, refetch } = useQuery({
     queryKey: ['deals'],
-    queryFn: fetchDeals
+    queryFn: fetchDeals,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   // Mutation for adding a new deal
@@ -126,9 +132,29 @@ const Deals = () => {
         </div>
         
         {error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong className="font-bold">Error: </strong>
-            <span className="block sm:inline">Failed to load deals. Please try again later.</span>
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription className="flex flex-col gap-4">
+              <p>Failed to load deals. Please try again later.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-fit" 
+                onClick={() => refetch()}
+                disabled={isLoading}
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : isLoading ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-10 w-[250px]" />
+              <Skeleton className="h-10 w-[100px]" />
+            </div>
+            <Skeleton className="h-[400px] w-full rounded-md" />
           </div>
         ) : (
           <div className="animate-slide-in">

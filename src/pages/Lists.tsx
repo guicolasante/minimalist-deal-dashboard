@@ -9,6 +9,10 @@ import { FilterState, FilterValue } from '@/components/lists/types';
 import FilterControls from '@/components/lists/FilterControls';
 import DealsList from '@/components/lists/DealsList';
 import ActionButtons from '@/components/lists/ActionButtons';
+import { fetchDeals } from '@/services/dealService';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw } from 'lucide-react';
 
 const Lists = () => {
   const [filters, setFilters] = useState<FilterState>({});
@@ -19,18 +23,12 @@ const Lists = () => {
   const [showFiltersPopover, setShowFiltersPopover] = useState(false);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  // Fetch deals data
-  const { data: deals, isLoading } = useQuery({
+  // Fetch deals data using the service
+  const { data: deals, isLoading, error, refetch } = useQuery({
     queryKey: ['deals'],
-    queryFn: async () => {
-      const response = await fetch('https://ckcigwfkptzlxiwfhlqr.supabase.co/rest/v1/deals?select=*', {
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrY2lnd2ZrcHR6bHhpd2ZobHFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzODMxNDEsImV4cCI6MjA1ODk1OTE0MX0.5NAkagO77hmUEn9pvXR4qQhuka3HR9Vl6ItahF2dCj8',
-          'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrY2lnd2ZrcHR6bHhpd2ZobHFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzODMxNDEsImV4cCI6MjA1ODk1OTE0MX0.5NAkagO77hmUEn9pvXR4qQhuka3HR9Vl6ItahF2dCj8'
-        }
-      });
-      return await response.json() as Deal[];
-    }
+    queryFn: fetchDeals,
+    retry: 2,
+    retryDelay: 1000,
   });
 
   const handleColumnsChange = (newColumns: ColumnDefinition[]) => {
@@ -135,21 +133,40 @@ const Lists = () => {
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <FilterControls 
-            activeFilters={activeFilters}
-            filters={filters}
-            columns={columns}
-            deals={deals}
-            handleFilterChange={handleFilterChange}
-            handleRemoveFilter={handleRemoveFilter}
-          />
-          
-          <DealsList 
-            isLoading={isLoading}
-            filteredDeals={filteredDeals}
-          />
-        </div>
+        {error ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription className="flex flex-col gap-4">
+              <p>Failed to load deals. Please try again later.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-fit" 
+                onClick={() => refetch()}
+                disabled={isLoading}
+              >
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <FilterControls 
+              activeFilters={activeFilters}
+              filters={filters}
+              columns={columns}
+              deals={deals}
+              handleFilterChange={handleFilterChange}
+              handleRemoveFilter={handleRemoveFilter}
+            />
+            
+            <DealsList 
+              isLoading={isLoading}
+              filteredDeals={filteredDeals}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

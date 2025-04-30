@@ -4,35 +4,43 @@ import { Deal, DealStatus } from "@/lib/types";
 
 // Fetch all deals from Supabase
 export const fetchDeals = async (): Promise<Deal[]> => {
-  const { data, error } = await supabase
-    .from('deals')
-    .select('*');
-  
-  if (error) {
-    console.error('Error fetching deals:', error);
+  console.log('Fetching deals with Supabase client...');
+  try {
+    const { data, error } = await supabase
+      .from('deals')
+      .select('*');
+    
+    if (error) {
+      console.error('Error fetching deals:', error);
+      throw error;
+    }
+    
+    if (!data) return [];
+    
+    console.log('Successfully fetched deals:', data.length);
+    
+    // Transform Supabase data to match our Deal interface
+    return data.map(deal => ({
+      id: deal.id,
+      name: deal.name,
+      company: deal.company,
+      status: deal.status as DealStatus,
+      amount: Number(deal.amount),
+      stage: deal.stage,
+      assignedTo: deal.assigned_to,
+      dateReceived: deal.date_received,
+      dateUpdated: deal.date_updated,
+      description: deal.description || '',
+      contactName: deal.contact_name || '',
+      contactEmail: deal.contact_email || '',
+      notes: deal.notes || '',
+      weekDeals: (deal.week_deals === 'Yes' ? 'Yes' : 'No') as 'Yes' | 'No',
+      sector: deal.sector || ''
+    }));
+  } catch (error) {
+    console.error('Error in fetchDeals:', error);
     throw error;
   }
-  
-  if (!data) return [];
-  
-  // Transform Supabase data to match our Deal interface
-  return data.map(deal => ({
-    id: deal.id,
-    name: deal.name,
-    company: deal.company,
-    status: deal.status as DealStatus,
-    amount: Number(deal.amount),
-    stage: deal.stage,
-    assignedTo: deal.assigned_to,
-    dateReceived: deal.date_received,
-    dateUpdated: deal.date_updated,
-    description: deal.description || '',
-    contactName: deal.contact_name || '',
-    contactEmail: deal.contact_email || '',
-    notes: deal.notes || '',
-    weekDeals: (deal.week_deals === 'Yes' ? 'Yes' : 'No') as 'Yes' | 'No',
-    sector: deal.sector || ''
-  }));
 };
 
 // Add a new deal to Supabase
