@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Deal, DealStatus } from "@/lib/types";
+import { Database } from "@/integrations/supabase/types";
 
 // Fetch all deals from Supabase
 export const fetchDeals = async (): Promise<Deal[]> => {
